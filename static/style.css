@@ -12,25 +12,30 @@ body {
     align-items: center;
     display: flex;
     flex-direction: column;
+    height: 75vh;
     justify-content: center;
     margin: 0 auto;
     width: 60vw;
-    height: 75vh;
 }
 
 .drop-area {
+    box-sizing: border-box;
     background-image: url("../static/assets/upload_icon.svg");
     background-position: center;
     background-repeat: no-repeat;
-    background-size: 6em;
+    background-size: 14vh;
     border: 4px dashed #aaa;
     border-radius: 8%;
     color: #aaa;
+    cursor: pointer;
     margin: auto auto 1em;
     text-align: center;
-    justify-content: end;
     height: 45vh;
     width: 35vw;
+}
+
+.drop-area__upload {
+    display: none;
 }
 
 .btn {
