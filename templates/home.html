@@ -4,9 +4,22 @@
         <img src="{{ url_for('static', filename='assets/dom_logo.png') }}", alt="logo">
     </div>
     <div class="content-container">
+        <div class="error-msg">
+            <p>Необходимо загрузить 2 файла: проводки и контракты</p>
+        </div>
         <div class="drop-area">
             <p>Загрузите файлы</p>
-            <input type="file" id="upload" class="drop-area__upload" multiple accept="application/*">
+            <input type="file" id="upload" multiple accept="application/*">
+        </div>
+        <div class="uploaded-files">
+            <div class="uploaded-files__first">
+                <img src="{{ url_for('static', filename='assets/excel_icon.svg') }}", alt="Excel icon">
+                <p id="first-file-name"></p>
+            </div>
+            <div class="uploaded-files__second">
+                <img src="{{ url_for('static', filename='assets/excel_icon.svg') }}", alt="Excel icon">
+                <p id="second-file-name"></p>
+            </div>
         </div>
         <form action="">
             <button class="btn">ВЫИГРАТЬ!</button>

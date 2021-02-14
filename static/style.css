@@ -5,7 +5,7 @@ body {
 
 .logo img {
     height: 6vh;
-    margin: .3em;
+    margin: .4em;
 }
 
 .content-container {
@@ -25,17 +25,50 @@ body {
     background-repeat: no-repeat;
     background-size: 14vh;
     border: 4px dashed #aaa;
-    border-radius: 8%;
+    border-radius: 10%;
     color: #aaa;
     cursor: pointer;
     margin: auto auto 1em;
     text-align: center;
     height: 45vh;
-    width: 35vw;
+    width: 33vw;
 }
 
-.drop-area__upload {
+#upload {
     display: none;
+}
+
+.drop-area__over {
+    background-image: url("../static/assets/upload_icon_green.svg");
+    border: 4px solid #8bc540;
+    color: #8bc540;
+}
+
+.error-msg {
+    display: none;
+    background-color: #f0c0c0;
+    border-radius: 10px;
+    color: red;
+    font-size: .8em;
+    font-weight: bold;
+    margin-top: 2em;
+    text-align: center;
+    width: 33vw;
+}
+
+.uploaded-files {
+    align-items: center;
+    color: #8bc540;
+    display: none;
+    flex-direction: row;
+    font-size: .8em;
+    height: 40vh;
+    text-align: center;
+    width: 33vw;
+}
+
+.uploaded-files img {
+    width: 60%;
 }
 
 .btn {
