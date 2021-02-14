@@ -1,0 +1,15 @@
+{% extends 'index.html' %}
+{% block content %}
+    <div class="logo">
+        <img src="{{ url_for('static', filename='assets/dom_logo.png') }}", alt="logo">
+    </div>
+    <div class="content-container">
+        <div class="drop-area">
+            <p>Загрузите файлы</p>
+            <input type="file" id="upload" multiple accept="application/*">
+        </div>
+        <form action="">
+            <button class="btn">ВЫИГРАТЬ!</button>
+        </form>
+    </div>
+{% endblock content %}
