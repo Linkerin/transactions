@@ -16,19 +16,36 @@ uploadArea.addEventListener('dragover', e => {
   uploadArea.addEventListener(type, e => uploadArea.classList.remove('drop-area__over'));
 });
 
-uploadArea.addEventListener('drop', e => {
-  e.preventDefault();
-  if (e.dataTransfer.files.length == 2) {
-    // inputElement.files = e.dataTransfer.files;
-    console.log(e.dataTransfer.files);
-    firstFile.textContent = e.dataTransfer.files[0].name;
-    secondFile.textContent = e.dataTransfer.files[1].name;
-    uploadArea.style.display = 'none';
-    filesArea.style.display = 'flex';
-  } else {
-    uploadArea.classList.remove('drop-area__over');
-    errorMsg.style.display = 'block';
-    setTimeout(() => errorMsg.style.display = 'none', 3000);
+uploadArea.addEventListener('drop', async (e) => {
+  try {
+    e.preventDefault();
+    if (e.dataTransfer.files.length == 2) {
+      const formData = new FormData();
+
+      for (let i = 0; i < e.dataTransfer.files.length; i++) {
+        formData.append(e.dataTransfer.files[i].name, e.dataTransfer.files[i]);
+      }
+
+      const response = await fetch('/upload', {
+        method: 'POST',
+        body: formData
+      });
+      if (response) {
+        console.log('Upload completed');
+      }
+
+      firstFile.textContent = e.dataTransfer.files[0].name;
+      secondFile.textContent = e.dataTransfer.files[1].name;
+      uploadArea.style.display = 'none';
+      filesArea.style.display = 'flex';
+
+    } else {
+      uploadArea.classList.remove('drop-area__over');
+      errorMsg.style.display = 'block';
+      setTimeout(() => errorMsg.style.display = 'none', 3000);
+    }
+  } catch (error) {
+    console.log(error);
   }
 });
 
