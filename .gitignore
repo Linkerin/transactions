@@ -1,1 +1,4 @@
 /transenv
+/temp/*
+/__pycache__
+/analysis.py
