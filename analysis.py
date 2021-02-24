@@ -141,7 +141,7 @@ class Transactions:
         for _, data in enumerate(dataframe): 
             columns_list = []
             for column in data.columns:
-                if 'Unnamed:' in column:
+                if 'Unnamed:' in str(column):
                     columns_list.append(column)
             data.drop(columns=columns_list, inplace=True)
         return
