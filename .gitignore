@@ -1,5 +1,3 @@
 /transenv
 /temp/*
 /__pycache__
-/analysis.py
-/analysis_2.py
