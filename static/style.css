@@ -3,9 +3,32 @@ body {
     font-size: x-large;
 }
 
+nav {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
 .logo img {
     height: 6vh;
     margin: .4em;
+}
+
+.info-icon {
+    position: relative;
+    border: solid 4px #8bc540;
+    border-radius: 20%;
+    color: #8bc540;
+    cursor: pointer;
+    height: 5vh;
+    font-size: 1.5em;
+    margin: .4em;
+    text-align: center;
+    width: 5vh;
+}
+
+.info-icon p{
+    margin: 0;
 }
 
 .content-container {

@@ -13,25 +13,26 @@ def home():
 @app.route("/upload", methods = ['POST', 'GET'])
 def upload():
     if request.method == 'POST':
+        filenames = []
         for _, value in request.files.items():
             value.save(f'./temp/{value.filename}')
+            filenames.append(value.filename)
 
-    files = os.listdir('./temp')
-    if len(files) == 2:
-        transactions = Transactions()
-        df = transactions.upload(f'./temp/{files[0]}', f'./temp/{files[1]}')
+    return jsonify(status='Upload completed', filenames=filenames)
 
-        if type(df) != str:
-            result = transactions.full_analysis(df)
-            result.to_excel('./temp/result.xlsx')
-        else:
-            return jsonify(status=df)
+    # files = os.listdir('./temp')
+    # if len(files) == 2:
+    #     transactions = Transactions()
+    #     df = transactions.upload(f'./temp/{files[0]}', f'./temp/{files[1]}')
 
-    for item in files:
-        os.remove(f'./temp/{item}')
+    #     if type(df) != str:
+    #         result = transactions.full_analysis(df)
+    #         result.to_excel('./temp/result.xlsx')
+    #     else:
+    #         return jsonify(status=df)
 
-    return jsonify(status='OK')
-
+    # for item in files:
+    #     os.remove(f'./temp/{item}')
 
 
 if __name__ == '__main__':
