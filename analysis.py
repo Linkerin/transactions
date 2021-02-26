@@ -98,9 +98,9 @@ class Transactions:
             output['contracts'] = df_1
         else:
             if not df_1_type:
-                return f"Incorrect file: {data_src.split('/')[-1]}"
+                return f"Invalid file: {data_src.split('/')[-1]}"
             elif not df_2_type:
-                return f"Incorrect file: {contracts_src.split('/')[-1]}"
+                return f"Invalid file: {contracts_src.split('/')[-1]}"
 
         output['data'].set_index('Номер', inplace=True)
 

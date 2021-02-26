@@ -36,21 +36,15 @@ async function fileUpload(e) {
       filesArea.style.display = 'flex';
       
       if (response.status === 'Upload completed') {
-        console.log(response)
         filesToAnalyse.filenames = response.filenames;
-        // const pandas = await fetch('/pandas_upload', {
-        //   method: 'POST',
-        //   body: JSON.stringify({filenames: response.filenames})
-        // }).then(res => res.json()).then(res => console.log(res));
-      }
-
     } else {
       uploadArea.classList.remove('drop-area__over');
       errorMsg.style.display = 'block';
       setTimeout(() => errorMsg.style.display = 'none', 3000);
     }
+  }
   } catch (error) {
-    console.log(error);
+  console.log(error);
   }
 }
 
@@ -68,24 +62,6 @@ uploadArea.addEventListener('drop', fileUpload)
 uploadArea.addEventListener('click', e => filesAreaClick.click());
 filesAreaClick.addEventListener('change', fileUpload)
 
-// async function pandasUpload(e) {
-//   e.preventDefault;
-//   if (filesToAnalyse.filenames.length) {
-//     try {
-//       const pandas = await fetch('/pandas_upload', {
-//         method: 'POST',
-//         body: JSON.stringify(filesToAnalyse)
-//       });
-//     } catch (error) {
-//       console.log(error);
-//     }
-//   } else {
-//     errorMsg.textContent = 'Файлы не были загружены на сервер'
-//     errorMsg.style.display = 'block';
-//     setTimeout(() => errorMsg.style.display = 'none', 3000);
-//   }
-// }
-// button.addEventListener('click', pandasUpload);
 button.addEventListener('click', async (e) => {
   e.preventDefault();
   if (filesToAnalyse.filenames.length) {
@@ -93,14 +69,30 @@ button.addEventListener('click', async (e) => {
       const pandas = await fetch('/pandas_upload', {
         method: 'POST',
         body: JSON.stringify(filesToAnalyse)
-      }).then(res => console.log(res));
+      }).then(async (response) => {
+        if (response.ok) {
+          return response.blob();
+        } else {
+          let msg = await response.json();
+          errorMsg.textContent = msg.status;
+          errorMsg.style.display = 'block';
+          setTimeout(() => errorMsg.style.display = 'none', 2000);
+        }
+      }).then (blob => {
+        const a = document.createElement("a");
+        a.href = window.URL.createObjectURL(blob);
+        a.download = "result.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      });
     } catch (error) {
       console.log(error);
     }
   } else {
-    errorMsg.textContent = 'Файлы не были загружены на сервер'
+    errorMsg.textContent = 'Файлы не были загружены на сервер';
     errorMsg.style.display = 'block';
-    setTimeout(() => errorMsg.style.display = 'none', 2000);
+    setTimeout(() => errorMsg.style.display = 'none', 3500);
   }
 });
 
@@ -109,8 +101,8 @@ let info = document.querySelector('.info-icon')
 
 info.addEventListener('click', () => {
   if (info.innerHTML === '<p>i</p>') {
-    info.innerHTML = '<p>X</p>'
+    info.innerHTML = '<p>X</p>';
   } else {
-    info.innerHTML = '<p>i</p>'
+    info.innerHTML = '<p>i</p>';
   }
 })

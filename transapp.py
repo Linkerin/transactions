@@ -29,7 +29,7 @@ def pandas_upload():
         valid_types = ['xls', 'xlsx']
         for item in data['filenames']:
             if item.split('.')[-1] not in valid_types:
-                return jsonify(status='Pandas: invalid file type')
+                return jsonify(status='Invalid file type'), 415
 
         transactions = Transactions()
         df = transactions.upload(f"./temp/{data['filenames'][0]}", f"./temp/{data['filenames'][1]}")
@@ -37,16 +37,15 @@ def pandas_upload():
             result = transactions.full_analysis(df)
             result.to_excel('./temp/result.xlsx')
         else:
-            return jsonify(status=df)
-    print('Done')
-    return send_from_directory('./temp', filename='result.xlsx', as_attachment=True,
-                     cache_timeout=0,
-                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            return jsonify(status=df), 415
 
-    # files = os.listdir('./temp')
-    # for item in files:
-    #     os.remove(f'./temp/{item}')
+    return send_from_directory('temp', 'result.xlsx', as_attachment=True,
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+    items = os.listdir('./temp')
+    for item in items:
+        os.remove(f'./temp/{item}')
