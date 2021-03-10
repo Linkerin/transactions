@@ -29,7 +29,7 @@ def pandas_upload():
         valid_types = ['xls', 'xlsx']
         for item in data['filenames']:
             if item.split('.')[-1] not in valid_types:
-                return jsonify(status='Invalid file type'), 415
+                return jsonify(status='Некорректный формат файла'), 415
 
         transactions = Transactions()
         df = transactions.upload(f"./temp/{data['filenames'][0]}", f"./temp/{data['filenames'][1]}")

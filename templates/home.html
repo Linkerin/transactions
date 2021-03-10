@@ -2,32 +2,124 @@
 {% block content %}
     <nav>
         <div class="logo">
-            <a href="/"><img src="{{ url_for('static', filename='assets/dom_logo.png') }}", alt="logo"></a>
+            <a href="/"><img src="{{ url_for('static', filename='assets/security_logo.png') }}", alt="logo"></a>
         </div>
         <div class="info-icon">
-            <p>i</p>
+            <svg width="10" height="24" viewBox="0 0 10 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect y="12" width="4" height="7" rx="2" transform="rotate(-90 0 12)" fill="#2F444E"/>
+                <rect x="3" y="24" width="4" height="7" rx="2" transform="rotate(-90 3 24)" fill="#2F444E"/>
+                <circle cx="5" cy="2" r="2" fill="#2F444E"/>
+                <rect x="3" y="8" width="4" height="16" rx="2" fill="#2F444E"/>
+            </svg>
         </div>
     </nav>
     <div class="content-container">
-        <div class="error-msg">
-            <p>Необходимо загрузить 2 файла: проводки и контракты</p>
-        </div>
-        <div class="drop-area">
-            <p>Загрузите файлы</p>
-            <input type="file" id="upload" multiple accept="application/*">
-        </div>
-        <div class="uploaded-files">
-            <div class="uploaded-files__first">
-                <img src="{{ url_for('static', filename='assets/excel_icon.svg') }}", alt="Excel icon">
-                <p id="first-file-name"></p>
+        <section class="drop-area-container">
+            <div class="drop-area">
+                <div class="error-msg-container">
+                    <div class="error-msg"></div>
+                </div>
+                <div class="drop-area__text-container">
+                    <div class="drop-area__text">
+                        <p>Загрузите файлы</p>
+                    </div>
+                </div>
+                <input type="file" id="upload" multiple accept="application/*">
             </div>
-            <div class="uploaded-files__second">
-                <img src="{{ url_for('static', filename='assets/excel_icon.svg') }}", alt="Excel icon">
-                <p id="second-file-name"></p>
+            <div class="drop-area-uploaded">
+                <div class="drop-area-uploaded__heading">
+                    <h2>Загружены файлы:</h2>
+                </div>
+                <div class="drop-area-uploaded__content-container">
+                    <!-- <div class="drop-area-uploaded__content">
+                        <img src="{{ url_for('static', filename='assets/file_icon.svg') }}" alt="File icon">
+                        <p>Some_file.pdf</p>
+                    </div>
+                    <div class="drop-area-uploaded__content">
+                        <img src="{{ url_for('static', filename='assets/excel_icon.svg') }}" alt="Excel icon">
+                        <p>Contracts.xlsx</p>
+                    </div> -->
+                </div>
             </div>
-        </div>
-        <form action="">
-            <button class="btn">ВЫИГРАТЬ!</button>
-        </form>
+            <form class="drop-area__btn-container" action="">
+                <button class="inactive-btn" id="analyzeBtn">ВЫИГРАТЬ</button>
+            </form>
+        </section>
+        <section class="info-block">
+            <div class="info-block__closeBtn">
+                <svg width="20" height="19" viewBox="0 0 20 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="3" y1="16.8493" x2="17.8492" y2="2.00007" stroke="#2F444E" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="2.82843" y1="2" x2="17.6777" y2="16.8492" stroke="#2F444E" stroke-width="4" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="info-block__text-container">
+                <div class="info-block__icon">
+                    <img src="{{ url_for('static', filename='assets/info_upload_icon.svg') }}" alt="upload icon">
+                </div>
+                <div class="info-block__text">
+                    <p>
+                        Для анализа транзакций необходимо загрузить два файла в формате *.xls или *.xlsx, 
+                        содержащих данные о транзакциях и контрактах. Формат файлов - выгрузки из 
+                        1С:Управление холдингом без изменений. 
+                    </p>
+                </div>
+            </div>
+            <div class="info-block__text-container">
+                <div class="info-block__icon">
+                    <img src="{{ url_for('static', filename='assets/info_clock_icon.svg') }}" alt="clock icon">
+                </div>
+                <div class="info-block__text">
+                    <p>
+                        После успешной загрузки файлов необходимо нажать на кнопку “Выиграть” 
+                        для запуска анализа транзакций.<br>Процесс анализа может занимать <br>
+                        <strong>до 5 минут</strong>.
+                    </p>
+                </div>
+            </div>
+            <div class="info-block__text-container">
+                <div class="info-block__icon">
+                    <img src="{{ url_for('static', filename='assets/info_results_icon.svg') }}" alt="download icon">
+                </div>
+                <div class="info-block__text">
+                    <p>
+                        В случае успешного завершения анализа система предложит скачать результаты в формате Excel.
+                    </p>
+                </div>
+            </div>
+            <div class="info-block__text-container">
+                <div class="info-block__icon">
+                    <img src="{{ url_for('static', filename='assets/info_alerts_icon.svg') }}" alt="alert icon">
+                </div>
+                <div class="info-block__text">
+                    <p>
+                        При возникновении ошибок система выведет текст ошибки в розовом информационном блоке.
+                    </p>
+                </div>
+            </div>
+        </section>
     </div>
-{% endblock content %}
+    <!-- Pop-up windows -->
+    <div class="popup-background">
+        <div class="popup-container" id="popup-uploading">
+            <img class="popup__icon" src="{{ url_for('static', filename='assets/popup_clock_icon.svg') }}" alt="clock icon">
+            <h2 class="popup-heading">Файлы загружаются</h2>
+            <p class="popup-text">Пожалуйста, подождите</p>
+            <div class="popup-loader"></div>
+        </div>
+        <div class="popup-container" id="popup-analyzing">
+            <img class="popup__icon" src="{{ url_for('static', filename='assets/popup_clock_icon.svg') }}" alt="clock icon">
+            <h2 class="popup-heading">Проводится анализ транзакций</h2>
+            <p class="popup-text">
+                Операция может занимать до 5 минут,<br>
+                пожалуйста, подождите
+            </p>
+            <div class="popup-loader"></div>
+        </div>
+        <div class="popup-container" id="popup-completed">
+            <img class="popup__icon" src="{{ url_for('static', filename='assets/completed_icon.svg') }}" alt="tick icon">
+            <img src="{{ url_for('static', filename='assets/closeBtn.svg') }}" alt="close button" class="popup-completed__closeBtn">
+            <h2 class="popup-heading">Анализ транзакций <br>успешно завершен</h2>
+            <button class="inactive-btn active-btn">СКАЧАТЬ<br>РЕЗУЛЬТАТ</button>
+        </div>
+    </div>
+    {% endblock content %}

@@ -1,11 +1,16 @@
 // Files upload process
-let button = document.querySelector('.btn');
+let analyzeBtn = document.querySelector('#analyzeBtn');
 let uploadArea = document.querySelector('.drop-area');
+let uploadAreaText = document.querySelector('.drop-area__text');
 let filesArea = document.querySelector('.uploaded-files');
-let filesAreaClick = document.querySelector('#upload')
+let dropAreaClick = document.querySelector('#upload');
+let uploadedFilesArea = document.querySelector('.drop-area-uploaded');
+let uploadedFilesDesc = document.querySelector('.drop-area-uploaded__content-container');
+let errorMsgContainer = document.querySelector('.error-msg-container');
 let errorMsg = document.querySelector('.error-msg');
-let firstFile = document.querySelector('#first-file-name');
-let secondFile = document.querySelector('#second-file-name');
+let popupBackground = document.querySelector('.popup-background');
+let popupUploading = document.querySelector('#popup-uploading');
+let popupAnalyzing = document.querySelector('#popup-analyzing');
 let filesToAnalyse = {filenames: []};
 
 async function fileUpload(e) {
@@ -25,22 +30,48 @@ async function fileUpload(e) {
         formData.append(files[i].name, files[i]);
       }
 
+      popupBackground.style.display = 'block';
+      popupUploading.classList.add('display-flex');
+
       const response = await fetch('/upload', {
         method: 'POST',
         body: formData
       }).then(res => res.json());
 
-      firstFile.textContent = files[0].name;
-      secondFile.textContent = files[1].name;
-      uploadArea.style.display = 'none';
-      filesArea.style.display = 'flex';
-      
+      let uploadedFilesInfo = "";
+      Array.from(files).forEach(file => {
+        let fileIcon;
+        let extension = file.name.split('.');
+        extension = extension[extension.length - 1];
+        console.log(extension)
+        if (extension === 'xls' || extension === 'xlsx') {
+          fileIcon = 'excel_icon.svg';
+        } else {
+          fileIcon = 'file_icon.svg';
+        }
+
+        uploadedFilesInfo += `
+        <div class="drop-area-uploaded__content">
+        <img src="/static/assets/${fileIcon}" alt="File icon">
+        <p>${file.name}</p>
+        </div>`;
+      });
+      uploadedFilesDesc.innerHTML = uploadedFilesInfo;
+
+      popupBackground.style.display = 'none';
+      popupUploading.classList.remove('display-flex');
+
       if (response.status === 'Upload completed') {
         filesToAnalyse.filenames = response.filenames;
+        uploadArea.classList.add('display-none');
+        uploadedFilesArea.classList.add('display-flex');
+        analyzeBtn.classList.add('active-btn');
     } else {
       uploadArea.classList.remove('drop-area__over');
-      errorMsg.style.display = 'block';
-      setTimeout(() => errorMsg.style.display = 'none', 3000);
+      uploadAreaText.classList.remove('drop-area__over-text');
+      errorMsgContainer.style.visibility = 'visible';
+      errorMsg.innerHTML = 'Необходимо загрузить 2 файла:<br>проводки и контракты';
+      setTimeout(() => errorMsgContainer.style.visibility = 'hidden', 5000);
     }
   }
   } catch (error) {
@@ -50,23 +81,29 @@ async function fileUpload(e) {
 
 uploadArea.addEventListener('dragover', e => {
   e.preventDefault();
-  uploadArea.classList.add('drop-area__over')
+  uploadArea.classList.add('drop-area__over');
+  uploadAreaText.classList.add('drop-area__over-text');
 });
 
 ['dragleave', 'dragend'].forEach(type =>{
-  uploadArea.addEventListener(type, e => uploadArea.classList.remove('drop-area__over'));
+  uploadArea.addEventListener(type, e => {
+    uploadArea.classList.remove('drop-area__over');
+    uploadAreaText.classList.remove('drop-area__over-text');
+  });
 });
 
 uploadArea.addEventListener('drop', fileUpload)
 
-uploadArea.addEventListener('click', e => filesAreaClick.click());
-filesAreaClick.addEventListener('change', fileUpload)
+uploadArea.addEventListener('click', e => dropAreaClick.click());
+dropAreaClick.addEventListener('change', fileUpload)
 
-button.addEventListener('click', async (e) => {
+analyzeBtn.addEventListener('click', async (e) => {
   e.preventDefault();
   if (filesToAnalyse.filenames.length) {
+    popupBackground.style.display = 'block';
+    popupAnalyzing.classList.add('display-flex');
     try {
-      const pandas = await fetch('/pandas_upload', {
+      await fetch('/pandas_upload', {
         method: 'POST',
         body: JSON.stringify(filesToAnalyse)
       }).then(async (response) => {
@@ -97,12 +134,16 @@ button.addEventListener('click', async (e) => {
 });
 
 // Information sidebar
-let info = document.querySelector('.info-icon')
+let infoOpenBtn = document.querySelector('.info-icon');
+let infoCloseBtn = document.querySelector('.info-block__closeBtn');
+let infoBlock = document.querySelector('.info-block');
 
-info.addEventListener('click', () => {
-  if (info.innerHTML === '<p>i</p>') {
-    info.innerHTML = '<p>X</p>';
-  } else {
-    info.innerHTML = '<p>i</p>';
-  }
-})
+infoOpenBtn.addEventListener('click', () => {
+  infoBlock.style.display = 'flex';
+  infoOpenBtn.style.visibility = 'hidden';
+});
+
+infoCloseBtn.addEventListener('click', () => {
+  infoBlock.style.display = 'none';
+  infoOpenBtn.style.visibility = 'visible';
+});
