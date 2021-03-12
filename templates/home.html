@@ -113,13 +113,13 @@
                 Операция может занимать до 5 минут,<br>
                 пожалуйста, подождите
             </p>
-            <div class="popup-loader"></div>
+            <div class="popup-loader" id="analysisLoader"></div>
         </div>
         <div class="popup-container" id="popup-completed">
             <img class="popup__icon" src="{{ url_for('static', filename='assets/completed_icon.svg') }}" alt="tick icon">
             <img src="{{ url_for('static', filename='assets/closeBtn.svg') }}" alt="close button" class="popup-completed__closeBtn">
             <h2 class="popup-heading">Анализ транзакций <br>успешно завершен</h2>
-            <button class="inactive-btn active-btn">СКАЧАТЬ<br>РЕЗУЛЬТАТ</button>
+            <button class="inactive-btn active-btn" id="popup-completed__downloadBtn">СКАЧАТЬ<br>РЕЗУЛЬТАТ</button>
         </div>
     </div>
     {% endblock content %}

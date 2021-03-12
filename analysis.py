@@ -103,6 +103,8 @@ class Transactions:
                 return f"Invalid file: {contracts_src.split('/')[-1]}"
 
         output['data'].set_index('Номер', inplace=True)
+        total_filt = output['data']['Дата'] == 'Итого'
+        output['data'].drop(index=output['data'][total_filt].index, inplace=True)
 
         #Correct conversion of float datatype to string via Int64 preserving NaN values
         output['data']['Получатель.ИНН'] = np.where(pd.isnull(output['data']['Получатель.ИНН']), 

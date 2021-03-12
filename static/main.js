@@ -1,5 +1,6 @@
 // Files upload process
 let analyzeBtn = document.querySelector('#analyzeBtn');
+let dropAreaContainer = document.querySelector('.drop-area-container');
 let uploadArea = document.querySelector('.drop-area');
 let uploadAreaText = document.querySelector('.drop-area__text');
 let filesArea = document.querySelector('.uploaded-files');
@@ -11,6 +12,10 @@ let errorMsg = document.querySelector('.error-msg');
 let popupBackground = document.querySelector('.popup-background');
 let popupUploading = document.querySelector('#popup-uploading');
 let popupAnalyzing = document.querySelector('#popup-analyzing');
+let popupCompleted = document.querySelector('#popup-completed');
+let popupCompletedCloseBtn = document.querySelector('.popup-completed__closeBtn');
+let popupCompletedDownloadBtn = document.querySelector('#popup-completed__downloadBtn');
+let popupLoader = document.querySelector('#analysisLoader');
 let filesToAnalyse = {filenames: []};
 
 async function fileUpload(e) {
@@ -43,7 +48,6 @@ async function fileUpload(e) {
         let fileIcon;
         let extension = file.name.split('.');
         extension = extension[extension.length - 1];
-        console.log(extension)
         if (extension === 'xls' || extension === 'xlsx') {
           fileIcon = 'excel_icon.svg';
         } else {
@@ -66,17 +70,29 @@ async function fileUpload(e) {
         uploadArea.classList.add('display-none');
         uploadedFilesArea.classList.add('display-flex');
         analyzeBtn.classList.add('active-btn');
+      }
     } else {
       uploadArea.classList.remove('drop-area__over');
       uploadAreaText.classList.remove('drop-area__over-text');
       errorMsgContainer.style.visibility = 'visible';
       errorMsg.innerHTML = 'Необходимо загрузить 2 файла:<br>проводки и контракты';
-      setTimeout(() => errorMsgContainer.style.visibility = 'hidden', 5000);
+      setTimeout(() => errorMsgContainer.style.visibility = 'hidden', 6000);
     }
-  }
   } catch (error) {
   console.log(error);
   }
+}
+
+function startPage() {
+  document.querySelector('.resultsDownloadLink').remove();
+  filesToAnalyse.filenames = [];
+  popupBackground.style.display = 'none';
+  popupCompleted.classList.remove('display-flex');
+  dropAreaContainer.style.visibility = 'visible'
+  uploadedFilesArea.classList.remove('display-flex');
+  analyzeBtn.classList.remove('active-btn');
+  uploadArea.classList.remove('display-none', 'drop-area__over');
+  uploadAreaText.classList.remove('drop-area__over-text');
 }
 
 uploadArea.addEventListener('dragover', e => {
@@ -89,6 +105,7 @@ uploadArea.addEventListener('dragover', e => {
   uploadArea.addEventListener(type, e => {
     uploadArea.classList.remove('drop-area__over');
     uploadAreaText.classList.remove('drop-area__over-text');
+    uploadAreaText.classList.remove('drop-area__over-text');
   });
 });
 
@@ -100,8 +117,17 @@ dropAreaClick.addEventListener('change', fileUpload)
 analyzeBtn.addEventListener('click', async (e) => {
   e.preventDefault();
   if (filesToAnalyse.filenames.length) {
+    dropAreaContainer.style.visibility = 'hidden'
     popupBackground.style.display = 'block';
     popupAnalyzing.classList.add('display-flex');
+    setInterval(() => {
+      popupLoader.style.marginRight = '0';
+      popupLoader.style.marginLeft = '550px';
+      setTimeout(() => {
+        popupLoader.style.marginRight = '550px';
+        popupLoader.style.marginLeft = '0';
+      }, 1200);
+    }, 2400);
     try {
       await fetch('/pandas_upload', {
         method: 'POST',
@@ -111,39 +137,78 @@ analyzeBtn.addEventListener('click', async (e) => {
           return response.blob();
         } else {
           let msg = await response.json();
-          errorMsg.textContent = msg.status;
-          errorMsg.style.display = 'block';
-          setTimeout(() => errorMsg.style.display = 'none', 2000);
+          popupBackground.style.display = 'none';
+          popupAnalyzing.classList.remove('display-flex');
+          dropAreaContainer.style.visibility = 'visible';
+          uploadedFilesArea.classList.remove('display-flex');
+          analyzeBtn.classList.remove('active-btn');
+          uploadArea.classList.remove('display-none', 'drop-area__over');
+          uploadAreaText.classList.remove('drop-area__over-text');
+          errorMsg.innerHTML = msg.status;
+          errorMsgContainer.style.visibility = 'visible';
+          filesToAnalyse.filenames = [];
+          setTimeout(() => errorMsgContainer.style.visibility = 'hidden', 6000);
         }
       }).then (blob => {
         const a = document.createElement("a");
+        a.classList.add('resultsDownloadLink');
         a.href = window.URL.createObjectURL(blob);
         a.download = "result.xlsx";
         document.body.appendChild(a);
-        a.click();
-        a.remove();
+        popupAnalyzing.classList.remove('display-flex');
+        popupCompleted.classList.add('display-flex');
+        popupCompletedDownloadBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          a.click();
+        });
       });
     } catch (error) {
       console.log(error);
     }
   } else {
-    errorMsg.textContent = 'Файлы не были загружены на сервер';
-    errorMsg.style.display = 'block';
-    setTimeout(() => errorMsg.style.display = 'none', 3500);
+    popupBackground.style.display = 'none';
+    popupAnalyzing.classList.remove('display-flex');
+    dropAreaContainer.style.visibility = 'visible'
+    uploadedFilesArea.classList.remove('display-flex');
+    analyzeBtn.classList.remove('active-btn');
+    uploadArea.classList.remove('display-none', 'drop-area__over');
+    uploadAreaText.classList.remove('drop-area__over-text');
+    errorMsgContainer.style.visibility = 'visible';
+    errorMsg.innerHTML = 'Файлы не были загружены на сервер';
+    setTimeout(() => errorMsgContainer.style.visibility = 'hidden', 6000);
   }
 });
+
+popupCompletedCloseBtn.addEventListener('click', startPage);
+// popupBackground.addEventListener('click', () => {
+//   if (popupCompleted.classList.contains('display-flex')) {
+//     startPage();
+//   }
+// });
 
 // Information sidebar
 let infoOpenBtn = document.querySelector('.info-icon');
 let infoCloseBtn = document.querySelector('.info-block__closeBtn');
 let infoBlock = document.querySelector('.info-block');
 
+// infoOpenBtn.addEventListener('click', () => {
+//   infoBlock.classList.add('display-flex');
+//   infoOpenBtn.style.visibility = 'hidden';
+// });
+
+// infoCloseBtn.addEventListener('click', () => {
+//   infoBlock.classList.remove('display-flex');
+//   infoOpenBtn.style.visibility = 'visible';
+// });
+
 infoOpenBtn.addEventListener('click', () => {
-  infoBlock.style.display = 'flex';
+  infoBlock.style.maxWidth = '400px';
+  dropAreaContainer.style.paddingRight = '400px';
   infoOpenBtn.style.visibility = 'hidden';
 });
 
 infoCloseBtn.addEventListener('click', () => {
-  infoBlock.style.display = 'none';
+  infoBlock.style.maxWidth = '0';
+  dropAreaContainer.style.paddingRight = '0';
   infoOpenBtn.style.visibility = 'visible';
 });
