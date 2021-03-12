@@ -35,7 +35,10 @@ def pandas_upload():
         df = transactions.upload(f"./temp/{data['filenames'][0]}", f"./temp/{data['filenames'][1]}")
         if type(df) != str:
             result = transactions.full_analysis(df)
-            result.to_excel('./temp/result.xlsx')
+            if type(result) != str:
+                result.to_excel('./temp/result.xlsx')
+            else:
+                return jsonify(status=result), 415
         else:
             return jsonify(status=df), 415
 

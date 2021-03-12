@@ -191,16 +191,6 @@ let infoOpenBtn = document.querySelector('.info-icon');
 let infoCloseBtn = document.querySelector('.info-block__closeBtn');
 let infoBlock = document.querySelector('.info-block');
 
-// infoOpenBtn.addEventListener('click', () => {
-//   infoBlock.classList.add('display-flex');
-//   infoOpenBtn.style.visibility = 'hidden';
-// });
-
-// infoCloseBtn.addEventListener('click', () => {
-//   infoBlock.classList.remove('display-flex');
-//   infoOpenBtn.style.visibility = 'visible';
-// });
-
 infoOpenBtn.addEventListener('click', () => {
   infoBlock.style.maxWidth = '400px';
   dropAreaContainer.style.paddingRight = '400px';

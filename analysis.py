@@ -60,18 +60,26 @@ class Transactions:
     Sucessful result of upload() method returns this dictionary type.
     """
     def full_analysis(self, dataframes):
-        result = pd.concat([
-            self.contract_validity(dataframes['data']),
-            self.accounting_article(dataframes['data'], dataframes['contracts']),
-            self.counterparty_inn(dataframes['data']),
-            self.cfo(dataframes['data'], dataframes['contracts']),
-            self.contracts_check(dataframes['data']),
-            self.counterparty_account(dataframes['data']),
-            self.duplicates(dataframes['data'])
-            ]).sort_index()
+        try:
+            result = pd.concat([
+                self.contract_validity(dataframes['data']),
+                self.accounting_article(dataframes['data'], dataframes['contracts']),
+                self.counterparty_inn(dataframes['data']),
+                self.cfo(dataframes['data'], dataframes['contracts']),
+                self.contracts_check(dataframes['data']),
+                self.counterparty_account(dataframes['data']),
+                self.duplicates(dataframes['data'])
+                ]).sort_index()
 
-        columns = list(result.columns.values)
-        result = result[[columns[-1]] + columns[0:len(columns) - 1]]
+            columns = list(result.columns.values)
+            result = result[[columns[-1]] + columns[0:len(columns) - 1]]
+        except TypeError as type_err:
+            print(type_err)
+            return f"Invalid file: тип данных не соответствует шаблону"
+        except KeyError as key_err:
+            print(key_err)
+            return f"Invalid file: ошибка ключа словаря"
+
 
         return result
 
@@ -84,44 +92,48 @@ class Transactions:
             df_1 = proc_1.result()
             df_2 = proc_2.result()
 
-        self.empty_columns_del([df_1, df_2])
-        
-        output = {}
+        try:
+            self.empty_columns_del([df_1, df_2])
+            
+            output = {}
 
-        df_1_type = self.df_check(df_1)
-        df_2_type = self.df_check(df_2)
-        if df_1_type == 'transactions' and df_2_type == 'contracts':
-            output['data'] = df_1
-            output['contracts'] = df_2
-        elif df_1_type == 'contracts' and df_2_type == 'transactions':
-            output['data'] = df_2
-            output['contracts'] = df_1
-        else:
-            if not df_1_type:
-                return f"Invalid file: {data_src.split('/')[-1]}"
-            elif not df_2_type:
-                return f"Invalid file: {contracts_src.split('/')[-1]}"
+            df_1_type = self.df_check(df_1)
+            df_2_type = self.df_check(df_2)
+            if df_1_type == 'transactions' and df_2_type == 'contracts':
+                output['data'] = df_1
+                output['contracts'] = df_2
+            elif df_1_type == 'contracts' and df_2_type == 'transactions':
+                output['data'] = df_2
+                output['contracts'] = df_1
+            else:
+                if not df_1_type:
+                    return f"Invalid file: {data_src.split('/')[-1]}"
+                elif not df_2_type:
+                    return f"Invalid file: {contracts_src.split('/')[-1]}"
 
-        output['data'].set_index('Номер', inplace=True)
-        total_filt = output['data']['Дата'] == 'Итого'
-        output['data'].drop(index=output['data'][total_filt].index, inplace=True)
+            output['data'].set_index('Номер', inplace=True)
+            total_filt = output['data']['Дата'] == 'Итого'
+            output['data'].drop(index=output['data'][total_filt].index, inplace=True)
 
-        #Correct conversion of float datatype to string via Int64 preserving NaN values
-        output['data']['Получатель.ИНН'] = np.where(pd.isnull(output['data']['Получатель.ИНН']), 
-                                                    output['data']['Получатель.ИНН'],
-                                                    output['data']['Получатель.ИНН'].astype('Int64').astype(str))
-        output['data']['Договор.Контрагент.ИНН'] = np.where(pd.isnull(output['data']['Договор.Контрагент.ИНН']), 
-                                                    output['data']['Договор.Контрагент.ИНН'],
-                                                    output['data']['Договор.Контрагент.ИНН'].astype('Int64').astype(str))
+            #Correct conversion of float datatype to string via Int64 preserving NaN values
+            output['data']['Получатель.ИНН'] = np.where(pd.isnull(output['data']['Получатель.ИНН']), 
+                                                        output['data']['Получатель.ИНН'],
+                                                        output['data']['Получатель.ИНН'].astype('Int64').astype(str))
+            output['data']['Договор.Контрагент.ИНН'] = np.where(pd.isnull(output['data']['Договор.Контрагент.ИНН']), 
+                                                        output['data']['Договор.Контрагент.ИНН'],
+                                                        output['data']['Договор.Контрагент.ИНН'].astype('Int64').astype(str))
 
-        output['data']['Договор.Дата подписания'] = pd.to_datetime(output['data']['Договор.Дата подписания'],
-                                                                   format='%d.%m.%Y', errors='coerce')
-        output['data']['Договор.Срок действия до'] = pd.to_datetime(output['data']['Договор.Срок действия до'],
+            output['data']['Договор.Дата подписания'] = pd.to_datetime(output['data']['Договор.Дата подписания'],
                                                                     format='%d.%m.%Y', errors='coerce')
-        output['data']['Дата'] = pd.to_datetime(output['data']['Дата'],
-                                                format='%d.%m.%Y %H:%M:%S', errors='coerce')
-        output['data']['Вх. дата'] = pd.to_datetime(output['data']['Вх. дата'],
-                                                    format='%d.%m.%Y', errors='coerce')
+            output['data']['Договор.Срок действия до'] = pd.to_datetime(output['data']['Договор.Срок действия до'],
+                                                                        format='%d.%m.%Y', errors='coerce')
+            output['data']['Дата'] = pd.to_datetime(output['data']['Дата'],
+                                                    format='%d.%m.%Y %H:%M:%S', errors='coerce')
+            output['data']['Вх. дата'] = pd.to_datetime(output['data']['Вх. дата'],
+                                                        format='%d.%m.%Y', errors='coerce')
+        except KeyError as err:
+            print(err)
+            return f"Invalid file: ошибка ключа словаря"
 
         return output
 
