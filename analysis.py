@@ -184,7 +184,7 @@ class Transactions:
                                 (data['Договор.Номер договора'].apply(lambda x: x not in contract_num_exlusions)) & \
                                 (data['Статья ДДС'] != 'Движение денежных средств по закладным') & \
                                 (data['Дата'].dt.date > data['Договор.Срок действия до'])
-        contract_validity_alerts = data[contract_validity_check]
+        contract_validity_alerts = pd.DataFrame(data[contract_validity_check])
         contract_validity_alerts['Alert_type'] = 'Проверка срока действия договора'
 
         return contract_validity_alerts
@@ -211,7 +211,7 @@ class Transactions:
         accounting_article_check = (data['Договор.Номер договора'].apply(lambda x: x not in contract_num_exlusions)) & \
                                 (data['Договор.Номер договора'].notnull()) & \
                                 (data['Статья ДДС'] != data['Договор.Основная статья движения денежных средств'])
-        accounting_article_alerts = data[accounting_article_filt & accounting_article_check]
+        accounting_article_alerts = pd.DataFrame(data[accounting_article_filt & accounting_article_check])
 
         accounting_article_alerts['Temp_key'] = accounting_article_alerts['Договор.Номер договора'].apply(str) + \
                                                 accounting_article_alerts['Статья ДДС'].apply(str)
@@ -230,7 +230,7 @@ class Transactions:
     def counterparty_inn(self, data):
         counterparty_inn_exclusions = data['Договор.Контрагент.ИНН'].notnull()
         counterparty_inn_check = data['Получатель.ИНН'] != data['Договор.Контрагент.ИНН']
-        counterparty_inn_alerts = data[counterparty_inn_exclusions][counterparty_inn_check]
+        counterparty_inn_alerts = pd.DataFrame(data[counterparty_inn_exclusions & counterparty_inn_check])
         counterparty_inn_alerts['Alert_type'] = 'Проверка соответствия ИНН'
 
         return counterparty_inn_alerts
@@ -241,7 +241,7 @@ class Transactions:
                     (data['Договор.Номер договора'] != 'б/н') & (data['Договор.Номер договора'].notnull()) & \
                     (data['ЦФО'].notnull()) & (data['ЦФО'] != data['Договор.ЦФО'])
 
-        cfo_alerts = data[cfo_check]
+        cfo_alerts = pd.DataFrame(data[cfo_check])
         cfo_alerts['Temp_key'] = cfo_alerts['Договор.Номер договора'].apply(str) + cfo_alerts['ЦФО'].apply(str)
         contracts_info['Temp_key'] = contracts_info['Договор контрагента.Номер договора'].apply(str) + \
                                     contracts_info['ЦФО'].apply(str)
@@ -288,7 +288,7 @@ class Transactions:
                         (data['Вид операции'].apply(lambda x: x not in trans_type_exclusions)) & \
                         (data['Получатель.ИНН'].apply(lambda x: x not in recipient_exclusions)) & \
                         (data['Договор.Номер договора'].isna())
-        contracts_alerts = data[contracts_check]
+        contracts_alerts = pd.DataFrame(data[contracts_check])
         contracts_alerts['Alert_type'] = 'Проверка на наличие договора в платеже'
 
         return contracts_alerts
@@ -337,7 +337,7 @@ class Transactions:
                                     (data['Получатель'].str.contains('банк', case=False, na=False) == False) & \
                                     (data['Получатель.ИНН'].apply(lambda x: x not in recipient_exclusions)) & \
                                     (data['Счет получателя'] != data['Договор.Контрагент.Банковский счет'])
-        counterparty_account_alerts = data[counterparty_account_check]
+        counterparty_account_alerts = pd.DataFrame(data[counterparty_account_check])
         counterparty_account_alerts['Alert_type'] = 'Проверка номера счета контрагента'
 
         return counterparty_account_alerts
@@ -363,9 +363,9 @@ class Transactions:
         dupl_check_2 = data[duplicate_filt].duplicated(subset=['Дата', 'Сумма', 'Получатель.ИНН', 'Назначение платежа'], keep=False)
         dupl_check_3 = data[duplicate_filt].duplicated(subset=['Дата', 'Сумма', 'Счет получателя', 'Назначение платежа'], keep=False)
 
-        duplicated_transactions_1 = data[duplicate_filt][dupl_check_1]
-        duplicated_transactions_2 = data[duplicate_filt][dupl_check_2]
-        duplicated_transactions_3 = data[duplicate_filt][dupl_check_3]
+        duplicated_transactions_1 = pd.DataFrame(data[duplicate_filt][dupl_check_1])
+        duplicated_transactions_2 = pd.DataFrame(data[duplicate_filt][dupl_check_2])
+        duplicated_transactions_3 = pd.DataFrame(data[duplicate_filt][dupl_check_3])
 
         duplicated_transactions_alerts = pd.merge(duplicated_transactions_1.reset_index(), \
                                         duplicated_transactions_2.reset_index(), how='outer')
