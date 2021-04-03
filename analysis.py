@@ -53,13 +53,16 @@ class Transactions:
             'Договор контрагента.Организация'
         )
 
-    """
-    `full_analysis()` starts the analysis itself.
-    `dataframes` parameter  is a dictionary with 2 datasets inside:
-    {'data': transactions_dataset, 'contracts': contracts_dataset}.
-    Sucessful result of upload() method returns this dictionary type.
-    """
     def full_analysis(self, dataframes):
+        """
+        This method starts the analysis itself.\n
+        `dataframes` parameter  is a dictionary with
+        2 datasets inside:\n
+        `{'data': transactions_dataset, 
+        'contracts': contracts_dataset}`.\n
+        Successful result of an `upload()` method returns 
+        the dictionary in this format.
+        """
         try:
             result = pd.concat([
                 self.contract_validity(dataframes['data']),
@@ -84,7 +87,6 @@ class Transactions:
         return result
 
     def upload(self, data_src, contracts_src):
-        
         with ccf.ProcessPoolExecutor() as executor:
             proc_1 = executor.submit(pd.read_excel, data_src)
             proc_2 = executor.submit(pd.read_excel, contracts_src)
@@ -137,9 +139,12 @@ class Transactions:
 
         return output
 
-    # This function checks data validity
-    # and identifies transactions and contracts
+    # 
     def df_check(self, df):
+        """ This method checks data validity
+            and identifies which file contains
+            transactions and which one - contracts.
+        """
         trans_col_check = list(map(lambda x: True if x in self.trans_columns else False, df.columns))
         contracts_col_check = list(map(lambda x: True if x in self.contracts_columns else False, \
                                 df.columns))
@@ -160,7 +165,7 @@ class Transactions:
             data.drop(columns=columns_list, inplace=True)
         return
 
-    # All the fuctions regarding red flags implemented below
+    # All the methods regarding red flags implemented below
 
     def contract_validity(self, data):
         date_terms_exclusions = (

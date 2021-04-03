@@ -116,66 +116,68 @@ dropAreaClick.addEventListener('change', fileUpload)
 
 analyzeBtn.addEventListener('click', async (e) => {
   e.preventDefault();
-  if (filesToAnalyse.filenames.length) {
-    dropAreaContainer.style.visibility = 'hidden'
-    popupBackground.style.display = 'block';
-    popupAnalyzing.classList.add('display-flex');
-    setInterval(() => {
-      popupLoader.style.marginRight = '0';
-      popupLoader.style.marginLeft = '550px';
-      setTimeout(() => {
-        popupLoader.style.marginRight = '550px';
-        popupLoader.style.marginLeft = '0';
-      }, 1200);
-    }, 2400);
-    try {
-      await fetch('/pandas_upload', {
-        method: 'POST',
-        body: JSON.stringify(filesToAnalyse)
-      }).then(async (response) => {
-        if (response.ok) {
-          return response.blob();
-        } else {
-          let msg = await response.json();
-          popupBackground.style.display = 'none';
+  if (analyzeBtn.classList.contains('active-btn')) {
+    if (filesToAnalyse.filenames.length) {
+      dropAreaContainer.style.visibility = 'hidden'
+      popupBackground.style.display = 'block';
+      popupAnalyzing.classList.add('display-flex');
+      setInterval(() => {
+        popupLoader.style.marginRight = '0';
+        popupLoader.style.marginLeft = '550px';
+        setTimeout(() => {
+          popupLoader.style.marginRight = '550px';
+          popupLoader.style.marginLeft = '0';
+        }, 1200);
+      }, 2400);
+      try {
+        await fetch('/pandas_upload', {
+          method: 'POST',
+          body: JSON.stringify(filesToAnalyse)
+        }).then(async (response) => {
+          if (response.ok) {
+            return response.blob();
+          } else {
+            let msg = await response.json();
+            popupBackground.style.display = 'none';
+            popupAnalyzing.classList.remove('display-flex');
+            dropAreaContainer.style.visibility = 'visible';
+            uploadedFilesArea.classList.remove('display-flex');
+            analyzeBtn.classList.remove('active-btn');
+            uploadArea.classList.remove('display-none', 'drop-area__over');
+            uploadAreaText.classList.remove('drop-area__over-text');
+            errorMsg.innerHTML = msg.status;
+            errorMsgContainer.style.visibility = 'visible';
+            filesToAnalyse.filenames = [];
+            setTimeout(() => errorMsgContainer.style.visibility = 'hidden', 6000);
+          }
+        }).then (blob => {
+          const a = document.createElement("a");
+          a.classList.add('resultsDownloadLink');
+          a.href = window.URL.createObjectURL(blob);
+          a.download = "result.xlsx";
+          document.body.appendChild(a);
           popupAnalyzing.classList.remove('display-flex');
-          dropAreaContainer.style.visibility = 'visible';
-          uploadedFilesArea.classList.remove('display-flex');
-          analyzeBtn.classList.remove('active-btn');
-          uploadArea.classList.remove('display-none', 'drop-area__over');
-          uploadAreaText.classList.remove('drop-area__over-text');
-          errorMsg.innerHTML = msg.status;
-          errorMsgContainer.style.visibility = 'visible';
-          filesToAnalyse.filenames = [];
-          setTimeout(() => errorMsgContainer.style.visibility = 'hidden', 6000);
-        }
-      }).then (blob => {
-        const a = document.createElement("a");
-        a.classList.add('resultsDownloadLink');
-        a.href = window.URL.createObjectURL(blob);
-        a.download = "result.xlsx";
-        document.body.appendChild(a);
-        popupAnalyzing.classList.remove('display-flex');
-        popupCompleted.classList.add('display-flex');
-        popupCompletedDownloadBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          a.click();
+          popupCompleted.classList.add('display-flex');
+          popupCompletedDownloadBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            a.click();
+          });
         });
-      });
-    } catch (error) {
-      console.log(error);
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      popupBackground.style.display = 'none';
+      popupAnalyzing.classList.remove('display-flex');
+      dropAreaContainer.style.visibility = 'visible'
+      uploadedFilesArea.classList.remove('display-flex');
+      analyzeBtn.classList.remove('active-btn');
+      uploadArea.classList.remove('display-none', 'drop-area__over');
+      uploadAreaText.classList.remove('drop-area__over-text');
+      errorMsgContainer.style.visibility = 'visible';
+      errorMsg.innerHTML = 'Файлы не были загружены на сервер';
+      setTimeout(() => errorMsgContainer.style.visibility = 'hidden', 6000);
     }
-  } else {
-    popupBackground.style.display = 'none';
-    popupAnalyzing.classList.remove('display-flex');
-    dropAreaContainer.style.visibility = 'visible'
-    uploadedFilesArea.classList.remove('display-flex');
-    analyzeBtn.classList.remove('active-btn');
-    uploadArea.classList.remove('display-none', 'drop-area__over');
-    uploadAreaText.classList.remove('drop-area__over-text');
-    errorMsgContainer.style.visibility = 'visible';
-    errorMsg.innerHTML = 'Файлы не были загружены на сервер';
-    setTimeout(() => errorMsgContainer.style.visibility = 'hidden', 6000);
   }
 });
 
