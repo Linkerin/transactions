@@ -1,3 +1,11 @@
+"""
+Accouting transactions fraud analysis application
+Copyright (C) 2021  Alexey Gusev
+GNU Affero General Public License v3.0
+Version: 0.1
+License: https://github.com/Linkerin/transactions/blob/main/license.txt
+"""
+
 from flask import Flask, render_template, redirect, request, send_from_directory, jsonify
 from analysis import Transactions
 import json
