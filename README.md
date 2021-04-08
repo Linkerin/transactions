@@ -1,4 +1,5 @@
 # Accouting transactions analysis tool
+![Upload screen](./upload_screen.png "Application upload screen")
 
 ## About
 This is a tool based on [Flask framework](https://flask.palletsprojects.com/en/1.1.x/) made for internal corporate needs. As an input it takes Excel files with accounting transactions for the period and all the company's contracts. Using Pandas library it analyses accouting transactions according to several rules and creates alerts if something suspicious is found.
