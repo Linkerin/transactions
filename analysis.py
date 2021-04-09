@@ -73,7 +73,8 @@ class Transactions:
         try:
             result = pd.concat([
                 self.contract_validity(dataframes['data']),
-                self.accounting_article(dataframes['data'], dataframes['contracts']),
+                self.accounting_article(dataframes['data'],
+                                        dataframes['contracts']),
                 self.counterparty_inn(dataframes['data']),
                 self.cfo(dataframes['data'], dataframes['contracts']),
                 self.contracts_check(dataframes['data']),
@@ -89,7 +90,6 @@ class Transactions:
         except KeyError as key_err:
             print(key_err)
             return f"Invalid file: ошибка ключа словаря"
-
 
         return result
 
@@ -122,18 +122,23 @@ class Transactions:
 
             output['data'].set_index('Номер', inplace=True)
             total_filt = output['data']['Дата'] == 'Итого'
-            output['data'].drop(index=output['data'][total_filt].index, inplace=True)
+            output['data'].drop(index=output['data'][total_filt].index,
+                                inplace=True)
 
             #Correct conversion of float datatype to string via Int64 preserving NaN values
             output['data']['Получатель.ИНН'] = np.where(pd.isnull(output['data']['Получатель.ИНН']), 
                                                         output['data']['Получатель.ИНН'],
-                                                        output['data']['Получатель.ИНН'].astype('Int64').astype(str))
+                                                        (output['data']['Получатель.ИНН']
+                                                         .astype('Int64')
+                                                         .astype(str)))
             output['data']['Договор.Контрагент.ИНН'] = np.where(pd.isnull(output['data']['Договор.Контрагент.ИНН']), 
                                                         output['data']['Договор.Контрагент.ИНН'],
-                                                        output['data']['Договор.Контрагент.ИНН'].astype('Int64').astype(str))
+                                                        (output['data']['Договор.Контрагент.ИНН']
+                                                         .astype('Int64')
+                                                         .astype(str)))
 
             output['data']['Договор.Дата подписания'] = pd.to_datetime(output['data']['Договор.Дата подписания'],
-                                                                    format='%d.%m.%Y', errors='coerce')
+                                                                       format='%d.%m.%Y', errors='coerce')
             output['data']['Договор.Срок действия до'] = pd.to_datetime(output['data']['Договор.Срок действия до'],
                                                                         format='%d.%m.%Y', errors='coerce')
             output['data']['Дата'] = pd.to_datetime(output['data']['Дата'],
@@ -146,7 +151,6 @@ class Transactions:
 
         return output
 
-    # 
     def df_check(self, df):
         """ This method checks data validity
             and identifies which file contains
@@ -173,7 +177,6 @@ class Transactions:
         return
 
     # All the methods regarding red flags implemented below
-
     def contract_validity(self, data):
         date_terms_exclusions = (
             'Возможность автопролонгации',
@@ -200,7 +203,6 @@ class Transactions:
         contract_validity_alerts['Alert_type'] = 'Проверка срока действия договора'
 
         return contract_validity_alerts
-
 
     def accounting_article (self, data, contracts_info):
         contract_num_exlusions = (
@@ -229,7 +231,9 @@ class Transactions:
                                                 accounting_article_alerts['Статья ДДС'].apply(str)
         contracts_info['Temp_key'] = contracts_info['Договор контрагента.Номер договора'].apply(str) + \
                                     contracts_info['Статья движения денежных средств'].apply(str)
-        contracts_filt = accounting_article_alerts['Temp_key'].apply(lambda x: x not in contracts_info['Temp_key'].values)
+        contracts_filt = np.where(accounting_article_alerts['Temp_key']
+                                  .isin(contracts_info['Temp_key'].values),
+                                  False, True)
 
         accounting_article_alerts = accounting_article_alerts[contracts_filt]
         accounting_article_alerts['Alert_type'] = 'Проверка статьи ДДС'
@@ -238,7 +242,6 @@ class Transactions:
 
         return accounting_article_alerts
 
-
     def counterparty_inn(self, data):
         counterparty_inn_exclusions = data['Договор.Контрагент.ИНН'].notnull()
         counterparty_inn_check = data['Получатель.ИНН'] != data['Договор.Контрагент.ИНН']
@@ -246,7 +249,6 @@ class Transactions:
         counterparty_inn_alerts['Alert_type'] = 'Проверка соответствия ИНН'
 
         return counterparty_inn_alerts
-
 
     def cfo(self, data, contracts_info):
         cfo_check = (data['Договор.Номер договора'] != 'По заявке') & \
@@ -257,7 +259,9 @@ class Transactions:
         cfo_alerts['Temp_key'] = cfo_alerts['Договор.Номер договора'].apply(str) + cfo_alerts['ЦФО'].apply(str)
         contracts_info['Temp_key'] = contracts_info['Договор контрагента.Номер договора'].apply(str) + \
                                     contracts_info['ЦФО'].apply(str)
-        contracts_filt = cfo_alerts['Temp_key'].apply(lambda x: x not in contracts_info['Temp_key'].values)
+        contracts_filt = np.where(cfo_alerts['Temp_key']
+                                  .isin(contracts_info['Temp_key'].values),
+                                  False, True)
 
         cfo_alerts = cfo_alerts[contracts_filt]
         cfo_alerts['Alert_type'] = 'Проверка соответствия ЦФО'
@@ -265,7 +269,6 @@ class Transactions:
         contracts_info.drop(columns='Temp_key', inplace=True)
 
         return cfo_alerts
-
 
     def contracts_check(self, data):
         aa_exclusions = (
@@ -293,8 +296,13 @@ class Transactions:
             'Вознаграждение членам ревизионной комиссии',
             'Группа. Выкуп закладных, ОД + %'
         )
-        trans_type_exclusions = ['Уплата налога', 'Перевод на другой счет организации', 'Перечисление подотчетному лицу']
-        recipient_exclusions = ['7707780887', '7710168360', '6731010703', '6731048270'] #Минстрой, Минфин, УФК и УФССП по Смоленской области
+        trans_type_exclusions = ('Уплата налога',
+                                 'Перевод на другой счет организации',
+                                 'Перечисление подотчетному лицу')
+        recipient_exclusions = ('7707780887', # Минстрой
+                                '7710168360', # Минфин
+                                '6731010703', # УФК по Смоленской области
+                                '6731048270') # УФССП по Смоленской области
 
         contracts_check = (data['Статья ДДС'].apply(lambda x: x not in aa_exclusions)) & \
                         (data['Статья ДДС'].apply(lambda x: x[0:6] != 'Налоги')) & \
@@ -305,7 +313,6 @@ class Transactions:
         contracts_alerts['Alert_type'] = 'Проверка на наличие договора в платеже'
 
         return contracts_alerts
-
 
     def counterparty_account(self, data):
         aa_exclusions = (
@@ -355,7 +362,6 @@ class Transactions:
 
         return counterparty_account_alerts
 
-
     def duplicates(self, data):
         aa_exclusions = (
             'Комиссия банка за расчетно-кассовое обслуживание',
@@ -388,18 +394,33 @@ class Transactions:
             & ((data['Получатель'] == data['Организация']) == False)
         )
 
-        dupl_check_1 = data[duplicate_filt].duplicated(subset=['Дата', 'Сумма', 'Получатель.ИНН', 'Счет получателя', 'Назначение платежа'], keep=False)
-        dupl_check_2 = data[duplicate_filt].duplicated(subset=['Дата', 'Сумма', 'Получатель.ИНН', 'Назначение платежа'], keep=False)
-        dupl_check_3 = data[duplicate_filt].duplicated(subset=['Дата', 'Сумма', 'Счет получателя', 'Назначение платежа'], keep=False)
+        dupl_check_1 = data[duplicate_filt].duplicated(subset=['Дата',
+                                                               'Сумма',
+                                                               'Получатель.ИНН',
+                                                               'Счет получателя',
+                                                               'Назначение платежа'],
+                                                       keep=False)
+        dupl_check_2 = data[duplicate_filt].duplicated(subset=['Дата',
+                                                               'Сумма',
+                                                               'Получатель.ИНН',
+                                                               'Назначение платежа'],
+                                                       keep=False)
+        dupl_check_3 = data[duplicate_filt].duplicated(subset=['Дата',
+                                                               'Сумма',
+                                                               'Счет получателя',
+                                                               'Назначение платежа'],
+                                                       keep=False)
 
         duplicated_transactions_1 = pd.DataFrame(data[duplicate_filt][dupl_check_1])
         duplicated_transactions_2 = pd.DataFrame(data[duplicate_filt][dupl_check_2])
         duplicated_transactions_3 = pd.DataFrame(data[duplicate_filt][dupl_check_3])
 
-        duplicated_transactions_alerts = pd.merge(duplicated_transactions_1.reset_index(), \
-                                        duplicated_transactions_2.reset_index(), how='outer')
-        duplicated_transactions_alerts = pd.merge(duplicated_transactions_alerts, \
-                                        duplicated_transactions_3.reset_index(), how='outer').set_index('Номер')
+        duplicated_transactions_alerts = pd.merge(duplicated_transactions_1.reset_index(),
+                                                  duplicated_transactions_2.reset_index(),
+                                                  how='outer')
+        duplicated_transactions_alerts = pd.merge(duplicated_transactions_alerts,
+                                                  duplicated_transactions_3.reset_index(),
+                                                  how='outer').set_index('Номер')
         duplicated_transactions_alerts['Alert_type'] = 'Проверка на дубликаты'
 
         return duplicated_transactions_alerts
