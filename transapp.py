@@ -1,6 +1,6 @@
 """
 Accouting transactions fraud analysis application
-Copyright (C) 2021  Alexey Gusev
+Copyright (C) 2021  Alexey Gusev. All rights reserved
 GNU Affero General Public License v3.0
 Version: 0.1
 License: https://github.com/Linkerin/transactions/blob/main/license.txt
@@ -40,7 +40,13 @@ def pandas_upload():
                 return jsonify(status='Некорректный формат файла'), 415
 
         transactions = Transactions()
-        df = transactions.upload(f"./temp/{data['filenames'][0]}", f"./temp/{data['filenames'][1]}")
+        if len(data['filenames']) == 2:
+            df = transactions.upload(f"./temp/{data['filenames'][0]}",
+                                     f"./temp/{data['filenames'][1]}")
+        elif len(data['filenames']) == 3:
+            df = transactions.upload(f"./temp/{data['filenames'][0]}",
+                                     f"./temp/{data['filenames'][1]}",
+                                     f"./temp/{data['filenames'][2]}")
         if type(df) != str:
             result = transactions.full_analysis(df)
             if type(result) != str:

@@ -5,7 +5,10 @@
 This is a tool based on [Flask framework](https://flask.palletsprojects.com/en/1.1.x/) made for internal corporate needs. As an input it takes Excel files with accounting transactions for the period and all the company's contracts. Using Pandas library it analyses accouting transactions according to several rules and creates alerts if something suspicious is found.
 
 ## Input requirements
-The application proceeds two Excel (*.xls, *.xlsx) files: one containing accouting transactions and the other one - company's contracts.
+The application proceeds up to three Excel (*.xls, *.xlsx) files:  
+* accouting transactions (obligatory);  
+* company's signed contracts (obligatory);
+* couterparties current accounts (optional).
 
 #### Accounting transactions fields:
 | Field                    | Type                          | Required |
@@ -52,6 +55,15 @@ The application proceeds two Excel (*.xls, *.xlsx) files: one containing accouti
 | Договор контрагента.Состояние судебного дела | String     | No       |
 | Договор контрагента.Валюта      | String                  | No       |
 | Договор контрагента.Организация | String                  | No       |
+
+#### Couterparties current accounts fields:
+| Field                        | Type                          | Required |
+| ---------------------------- |-------------------------------| :-------:|
+| Наименование                 | String                        | Yes      |
+| НаименованиеПолное           | String                        | No       |
+| ИНН                          | Number                        | No       |
+| КПП                          | Number                        | No       |
+| НаименованиеБанковскогоСчета | String                        | No       |
 
 ## Output
 Excel file with analysis results. The format is the same as for accounting transactions file with an additional field:

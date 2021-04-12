@@ -1,6 +1,6 @@
 """
 Accouting transactions fraud analysis application
-Copyright (C) 2021  Alexey Gusev
+Copyright (C) 2021  Alexey Gusev. All rights reserved
 GNU Affero General Public License v3.0
 License: https://github.com/Linkerin/transactions/blob/main/license.txt
 """
@@ -60,6 +60,14 @@ class Transactions:
             'Договор контрагента.Организация'
         )
 
+        self.counterparties_columns = (
+            'Наименование',
+            'НаименованиеПолное',
+            'ИНН',
+            'КПП',
+            'НаименованиеБанковскогоСчета'
+        )
+
     def full_analysis(self, dataframes):
         """
         This method starts the analysis itself.\n
@@ -78,7 +86,8 @@ class Transactions:
                 self.counterparty_inn(dataframes['data']),
                 self.cfo(dataframes['data'], dataframes['contracts']),
                 self.contracts_check(dataframes['data']),
-                self.counterparty_account(dataframes['data']),
+                self.counterparty_account(dataframes['data'],
+                                          dataframes['counterparties']),
                 self.duplicates(dataframes['data'])
                 ]).sort_index()
 
@@ -93,32 +102,46 @@ class Transactions:
 
         return result
 
-    def upload(self, data_src, contracts_src):
+    def upload(self, data_src, contracts_src, counterparties_src=None):
         with ccf.ProcessPoolExecutor() as executor:
             proc_1 = executor.submit(pd.read_excel, data_src)
             proc_2 = executor.submit(pd.read_excel, contracts_src)
+            if counterparties_src is not None:
+                proc_3 = executor.submit(pd.read_excel, counterparties_src)
+                df_3 = proc_3.result()
+            else:
+                df_3 = None
 
             df_1 = proc_1.result()
             df_2 = proc_2.result()
 
         try:
-            self.empty_columns_del([df_1, df_2])
+            self.empty_columns_del([df_1, df_2, df_3])
             
-            output = {}
+            output = {
+                'data': None,
+                'contracts': None,
+                'counterparties': None
+            }
 
             df_1_type = self.df_check(df_1)
             df_2_type = self.df_check(df_2)
-            if df_1_type == 'transactions' and df_2_type == 'contracts':
-                output['data'] = df_1
-                output['contracts'] = df_2
-            elif df_1_type == 'contracts' and df_2_type == 'transactions':
-                output['data'] = df_2
-                output['contracts'] = df_1
-            else:
-                if not df_1_type:
-                    return f"Invalid file: {data_src.split('/')[-1]}"
-                elif not df_2_type:
-                    return f"Invalid file: {contracts_src.split('/')[-1]}"
+            df_3_type = self.df_check(df_3)
+            check_result = {
+                df_1_type: df_1,
+                df_2_type: df_2,
+                df_3_type: df_3
+            }
+
+            for key, value in check_result.items():
+                if key in output:
+                    output[key] = value
+
+            for key, value in output.items():
+                if value is False:
+                    return f"Invalid file: {key}"
+                elif value is None and key != 'counterparties':
+                    return f"Invalid file: {key}"
 
             output['data'].set_index('Номер', inplace=True)
             total_filt = output['data']['Дата'] == 'Итого'
@@ -156,20 +179,32 @@ class Transactions:
             and identifies which file contains
             transactions and which one - contracts.
         """
-        trans_col_check = list(map(lambda x: True if x in self.trans_columns else False, df.columns))
-        contracts_col_check = list(map(lambda x: True if x in self.contracts_columns else False, \
-                                df.columns))
+        if df is None:
+            return df
+
+        trans_col_check = list(map(lambda x: True if x in self.trans_columns else False,
+                                   df.columns))
+        contracts_col_check = list(map(lambda x: True if x in self.contracts_columns else False,
+                                       df.columns))
+        counterparties_col_check = list(map(lambda x: True if x in self.counterparties_columns else False,
+                                           df.columns))
 
         if set(trans_col_check) == {True} and len(trans_col_check) == 23:
-            return 'transactions'
-        elif set(contracts_col_check) == {True} and len(contracts_col_check) >= 15:
+            return 'data' # 'transactions'
+        elif (set(contracts_col_check) == {True}
+              and len(contracts_col_check) >= 15):
             return 'contracts'
+        elif (set(counterparties_col_check) == {True}
+              and len(counterparties_col_check) >= 4):
+            return 'counterparties'
 
         return False
 
     def empty_columns_del(self, dataframe):
         for _, data in enumerate(dataframe): 
             columns_list = []
+            if data is None:
+                continue
             for column in data.columns:
                 if 'Unnamed:' in str(column):
                     columns_list.append(column)
@@ -314,25 +349,7 @@ class Transactions:
 
         return contracts_alerts
 
-    def counterparty_account(self, data):
-        aa_exclusions = (
-            'Группа. Выкуп закладных, ОД + %',
-            'Движение денежных средств по закладным',
-            'Перечисление ДС на брокерские счета',
-            'Программа льготного ипотечного кредитования 6,5%',
-            'Программа льготного кредитования застройщиков',
-            'О: Выплата купона',
-            'Комиссия за кредитный риск',
-            'Комиссии за услуги сервисных агентов',
-            'Комиссии за услуги сервисных агентов (Портфель инвесторов)',
-            'Комиссия за депозитарное хранение и учет закладных',
-            'Комиссия банка за расчетно-кассовое обслуживание',
-            'Комиссия платежному агенту',
-            'Комиссия биржи: сборы',
-            'Депозит. Размещение средств в депозиты',
-            'Группа. Перечисление  ОД + % и пр. по закладным инвестора',
-            'Информационные услуги по ЦБ'
-        )
+    def counterparty_account(self, data, counterparties):
         contracts_exclusions = (
             'По счетам',
             'по счетам',
@@ -341,23 +358,27 @@ class Transactions:
             'Постановление № 1609',
             'Постановление №1170'
         )
-        recipient_exclusions = (
-            '7704366195', #ДОМ.РФ Управление активами
-            '7702165310', #НКО АО НРД
-            '7725038124', #Банк ДОМ.РФ
-            '7727290538', #ДОМ.РФ Ипотечный агент
-            '7729355614'  #АО ДОМ.РФ
-        )
 
-        counterparty_account_check = (data['Статья ДДС'].apply(lambda x: x not in aa_exclusions)) & \
-                                    (data['Договор.Номер договора'].apply(lambda x: x not in contracts_exclusions)) & \
-                                    (data['Договор.Номер договора'].notnull()) & \
-                                    (data['Счет получателя'].notnull()) & \
-                                    (data['Договор.Контрагент.Банковский счет'].notnull()) & \
-                                    (data['Получатель'].str.contains('банк', case=False, na=False) == False) & \
-                                    (data['Получатель.ИНН'].apply(lambda x: x not in recipient_exclusions)) & \
-                                    (data['Счет получателя'] != data['Договор.Контрагент.Банковский счет'])
+        counterparty_account_check = (data['Договор.Номер договора'].apply(lambda x: x not in contracts_exclusions)) & \
+                                     (data['Договор.Номер договора'].notnull()) & \
+                                     (data['Счет получателя'].notnull()) & \
+                                     (data['Договор.Контрагент.Банковский счет'].notnull()) & \
+                                     (data['Счет получателя'] != data['Договор.Контрагент.Банковский счет'])
         counterparty_account_alerts = pd.DataFrame(data[counterparty_account_check])
+        if counterparties is not None:
+            counterparties['Temp_key'] = (counterparties['Наименование'].apply(str)
+                                          + counterparties['НаименованиеБанковскогоСчета'].apply(str))
+            counterparty_account_alerts['Temp_key'] = (counterparty_account_alerts['Получатель'].apply(str)
+                                                       + counterparty_account_alerts['Счет получателя']
+                                                         .apply(str))
+            counterparty_filt = np.where(counterparty_account_alerts['Temp_key']
+                                         .isin(counterparties['Temp_key']),
+                                         False, True)
+            result = pd.DataFrame(counterparty_account_alerts[counterparty_filt])
+            result.drop(columns='Temp_key', inplace=True)
+            counterparties.drop(columns='Temp_key', inplace=True)
+            counterparty_account_alerts = result
+
         counterparty_account_alerts['Alert_type'] = 'Проверка номера счета контрагента'
 
         return counterparty_account_alerts

@@ -28,7 +28,7 @@ async function fileUpload(e) {
 
   try {
     e.preventDefault();
-    if (files.length == 2) {
+    if (files.length >= 2) {
       const formData = new FormData();
 
       for (let i = 0; i < files.length; i++) {
@@ -75,7 +75,8 @@ async function fileUpload(e) {
       uploadArea.classList.remove('drop-area__over');
       uploadAreaText.classList.remove('drop-area__over-text');
       errorMsgContainer.style.visibility = 'visible';
-      errorMsg.innerHTML = 'Необходимо загрузить 2 файла:<br>проводки и контракты';
+      errorMsg.innerHTML = `Необходимо загрузить файлы:
+                            <br>проводки, контракты, контрагенты (опционально)`;
       setTimeout(() => errorMsgContainer.style.visibility = 'hidden', 6000);
     }
   } catch (error) {
@@ -84,7 +85,7 @@ async function fileUpload(e) {
 }
 
 function startPage() {
-  document.querySelector('.resultsDownloadLink').remove();
+  document.body.removeChild(document.querySelector('.resultsDownloadLink'));
   filesToAnalyse.filenames = [];
   popupBackground.style.display = 'none';
   popupCompleted.classList.remove('display-flex');
@@ -123,9 +124,9 @@ analyzeBtn.addEventListener('click', async (e) => {
       popupAnalyzing.classList.add('display-flex');
       setInterval(() => {
         popupLoader.style.marginRight = '0';
-        popupLoader.style.marginLeft = '550px';
+        popupLoader.style.marginLeft = '380px';
         setTimeout(() => {
-          popupLoader.style.marginRight = '550px';
+          popupLoader.style.marginRight = '380px';
           popupLoader.style.marginLeft = '0';
         }, 1200);
       }, 2400);
@@ -158,10 +159,6 @@ analyzeBtn.addEventListener('click', async (e) => {
           document.body.appendChild(a);
           popupAnalyzing.classList.remove('display-flex');
           popupCompleted.classList.add('display-flex');
-          popupCompletedDownloadBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            a.click();
-          });
         });
       } catch (error) {
         console.log(error);
@@ -181,12 +178,12 @@ analyzeBtn.addEventListener('click', async (e) => {
   }
 });
 
+popupCompletedDownloadBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  let result = document.querySelector('.resultsDownloadLink');
+  result.click();
+});
 popupCompletedCloseBtn.addEventListener('click', startPage);
-// popupBackground.addEventListener('click', () => {
-//   if (popupCompleted.classList.contains('display-flex')) {
-//     startPage();
-//   }
-// });
 
 // Information sidebar
 let infoOpenBtn = document.querySelector('.info-icon');

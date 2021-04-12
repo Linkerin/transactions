@@ -28,15 +28,15 @@ p {
 .inactive-btn {
     background-color: #c4c4c4;
     border: none;
-    border-radius: 30px;
+    border-radius: 20px;
     color: white;
     cursor: pointer;
     font-style: normal;
     font-weight: 900;
-    font-size: 18px;
-    line-height: 21px;
-    height: 80px;
-    width: 240px;
+    font-size: 16px;
+    line-height: 19px;
+    height: 60px;
+    width: 200px;
 }
 
 .active-btn {
@@ -46,7 +46,7 @@ p {
 .logo img {
     height: 40px;
     width: auto;
-    margin-left: 120px;
+    margin-left: 80px;
 }
 
 .info-icon {
@@ -79,7 +79,7 @@ p {
     display: flex;
     align-items: center;
     flex-direction: column;
-    margin: 100px auto 0;
+    margin: 80px auto 0;
     transition: padding-right 0.5s;
 }
 
@@ -88,16 +88,16 @@ p {
     background-image: url("../static/assets/upload_icon.svg");
     background-position: center;
     background-repeat: no-repeat;
-    background-size: 100px;
+    background-size: 70px;
     border: 4px dashed #aaa;
     border-radius: 40px;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    margin: 0 auto 1em;
-    height: 500px;
-    width: 800px;
+    margin: 0 auto .5em;
+    height: 300px;
+    width: 500px;
 }
 
 .error-msg-container {
@@ -128,15 +128,15 @@ p {
     justify-content: center;
     height: 50%;
     margin-bottom: 0;
-    padding-bottom: 100px;
+    padding-bottom: 38px;
 }
 
 .drop-area__text {
     color: #aaa;
     font-style: normal;
     font-weight: 500;
-    font-size: 45px;
-    line-height: 53px;
+    font-size: 30px;
+    line-height: 35px;
     text-align: center;
 }
 
@@ -157,7 +157,7 @@ p {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 50px;
+    margin-top: 25px;
 }
 
 .drop-area-uploaded {
@@ -165,21 +165,21 @@ p {
     border-radius: 40px;
     display: none;
     flex-direction: column;
-    margin: 0 auto 1em;
-    height: 500px;
-    width: 800px;
+    margin: 0 auto .5em;
+    height: 300px;
+    width: 500px;
 }
 
 .drop-area-uploaded__heading {
-    margin: 100px auto 55px;
+    margin: 40px auto 25px;
 }
 
 .drop-area-uploaded__heading h2 {
     color: #2F444E;
     font-style: normal;
     font-weight: 700;
-    font-size: 32px;
-    line-height: 37px;
+    font-size: 22px;
+    line-height: 26px;
 }
 
 .drop-area-uploaded__content-container {
@@ -194,29 +194,16 @@ p {
     color: #2F444E;
     font-style: normal;
     font-weight: 400;
-    font-size: 20px;
-    line-height: 23px;
-    margin-bottom: 35px;
+    font-size: 16px;
+    line-height: 19px;
+    margin-bottom: 25px;
 }
 
 .drop-area-uploaded__content img {
-    height: 40px;
-    width: 40px;
-    margin-right: 25px;
+    height: 30px;
+    width: 30px;
+    margin-right: 15px;
 }
-
-/* .info-block {
-    align-items: flex-end;
-    background-color: #fff;
-    display: none;
-    align-items: center;
-    flex-direction: column;
-    justify-content: flex-start;
-    height: calc(100vh - 113px);
-    margin-left: 20px;
-    max-width: 400px;
-    padding-top: 30px;
-} */
 
 .info-block {
     background-color: #fff;
@@ -294,14 +281,14 @@ p {
     flex-direction: column;
     align-items: center;
     height: auto;
-    margin: 180px auto 1em;
+    margin: 163px auto .5em;
     padding: 50px;
     position: relative;
-    width: 700px;
+    width: 500px;
 }
 
 .popup__icon {
-    height: 50px;
+    height: 30px;
     width: auto;
 }
 
@@ -309,9 +296,9 @@ p {
     color: #2F444E;
     font-style: normal;
     font-weight: 900;
-    font-size: 36px;
-    line-height: 42px;
-    margin: 35px auto 35px;
+    font-size: 22px;
+    line-height: 26px;
+    margin: 30px auto;
     text-align: center;
 }
 
@@ -319,9 +306,9 @@ p {
     color: #6a6a6a;
     font-style: normal;
     font-weight: 400;
-    font-size: 25px;
-    line-height: 29px;
-    margin: 0 auto 55px;
+    font-size: 20px;
+    line-height: 23px;
+    margin: 0 auto 35px;
     text-align: center;
 }
 
@@ -329,15 +316,15 @@ p {
     background-color: #8BC540;
     border-radius: 4px;
     margin: 0;
-    height: 50px;
-    width: 50px;
-    margin-right: 550px;
+    height: 30px;
+    width: 30px;
+    margin-right: 380px;
     transition: 1.2s;
 }
 
 #popup-completed {
-    padding-top: 90px;
-    padding-bottom: 60px;
+    padding-top: 50px;
+    padding-bottom: 40px;
 }
 
 .popup-completed__closeBtn {
@@ -353,21 +340,4 @@ p {
 
 .display-flex {
     display: flex;
-}
-
-@media (max-width: 1024px) {
-    .drop-area {
-        background-size: 70px;
-        height: 300px;
-        width: 450px;
-    }
-
-    .drop-area__text {
-        font-size: 24px;
-        line-height: 28px;
-    }
-
-    .drop-area__text-container {
-        padding-bottom: 60px;
-    }
 }
